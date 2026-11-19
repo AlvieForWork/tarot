@@ -1,0 +1,879 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>山邊塔羅（試玩版）</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="工作和人生，卡住了嗎？抽幾張牌，他不繞圈子，直接給你一個答案。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="山邊塔羅（試玩版）">
+<meta property="og:description" content="工作和人生，卡住了嗎？抽幾張牌，他不繞圈子，直接給你一個答案。">
+<meta property="og:url" content="https://alvieforwork.github.io/tarot/">
+<meta property="og:image" content="https://alvieforwork.github.io/tarot/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Huninn&family=LXGW+WenKai+TC:wght@700&family=Noto+Sans+TC:wght@900&family=Noto+Serif+TC:wght@900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1c1a1f; --paper:#f6ecd6; --paper-2:#eadcbd; --kraft:#d7b27c; --kraft-2:#c49a5f;
+  --table:#1f5a48; --table-2:#2f7a62; --sky:#2a2d6e;
+  --red:#e2492b; --yellow:#f2b632; --navy:#232a4d; --skin:#f0c8a2; --wood:#8a5a33;
+  --card-w:86px;
+  --ui:"Huninn","Noto Sans TC",system-ui,sans-serif;
+  --display:"Noto Sans TC",system-ui,sans-serif;
+  --hand:"LXGW WenKai TC","Huninn",serif;
+  --stamp:"Noto Serif TC",serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{font-family:var(--ui);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+  background:var(--sky);transition:background .5s}
+body.at-table{background:#184a3b}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+svg{display:block}
+.app{max-width:480px;margin:0 auto;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;position:relative}
+.screen{display:none;flex:1;flex-direction:column}
+.screen.on{display:flex}
+.app.shake{animation:shake .32s}
+@keyframes shake{20%{transform:translate(-5px,2px)}40%{transform:translate(5px,-2px)}60%{transform:translate(-3px,1px)}80%{transform:translate(2px,0)}}
+@keyframes pop{from{opacity:0;transform:translateY(6px) scale(.94) rotate(var(--r,0deg))}to{opacity:1;transform:none rotate(var(--r,0deg))}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* 共用：紙、按鈕 */
+.paper{background:var(--paper);border:2.5px solid var(--ink);border-radius:6px;box-shadow:5px 5px 0 var(--ink)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:54px;border:2.5px solid var(--ink);border-radius:8px;
+  background:var(--red);color:var(--paper);font-family:var(--display);font-weight:900;font-size:17px;letter-spacing:.12em;
+  box-shadow:4px 4px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translate(4px,4px);box-shadow:0 0 0 var(--ink)}
+.btn:disabled{background:#d3c8ae;color:#8f8672;box-shadow:none;transform:none;cursor:default}
+.btn.yellow{background:var(--yellow);color:var(--ink)}
+.link{font-size:15px;text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1.5px;padding:8px 4px}
+.link.on-table{color:var(--paper)}
+.fine{font-size:12px;opacity:.6;text-align:center}
+
+.mute{position:fixed;top:12px;right:12px;z-index:30;width:40px;height:40px;border-radius:50%;background:var(--paper);border:2.5px solid var(--ink);
+  box-shadow:3px 3px 0 var(--ink);display:grid;place-items:center}
+.mute svg{width:20px;height:20px}
+.mute[aria-pressed=false] .wave{display:none}
+.mute[aria-pressed=true] .x{display:none}
+
+/* ---------- 店門口 ---------- */
+.scene{width:100%;height:auto}
+.scene .door-leaf{transform-box:fill-box;transform-origin:left center;transition:transform .55s cubic-bezier(.5,0,.2,1)}
+.scene.open .door-leaf{transform:scaleX(.08)}
+.scene .smoke circle,.candle .puff circle{transform-box:fill-box;transform-origin:center}
+.scene .smoke circle{animation:smoke 4s linear infinite;opacity:0}
+.scene .smoke circle:nth-child(2){animation-delay:1.3s}
+.scene .smoke circle:nth-child(3){animation-delay:2.6s}
+@keyframes smoke{0%{opacity:0;transform:translate(0,0) scale(.6)}20%{opacity:.9}100%{opacity:0;transform:translate(14px,-46px) scale(1.5)}}
+.scene .star{animation:tw 3s ease-in-out infinite}
+.scene .star:nth-of-type(2n){animation-delay:1.2s}
+@keyframes tw{50%{opacity:.25}}
+.scene .lantern{transform-box:fill-box;transform-origin:top center;animation:sway 4s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+.scene .deer{cursor:pointer;transform-box:fill-box;transform-origin:bottom center}
+.scene .deer.jump{animation:jump .5s}
+@keyframes jump{30%{transform:translateY(-16px) rotate(-6deg)}60%{transform:translateY(0)}80%{transform:translateY(-5px)}}
+.scene .bark{opacity:0;transition:opacity .15s}
+.scene .bark.on{opacity:1}
+.door-panel{flex:1;background:var(--paper);border-top:2.5px solid var(--ink);padding:26px 20px 20px;display:flex;flex-direction:column;margin-top:-2px}
+.door-panel h1{font-family:var(--display);font-weight:900;font-size:31px;line-height:1.3;letter-spacing:.02em}
+.door-panel h1 em{font-style:normal;background:linear-gradient(transparent 58%,var(--yellow) 58% 92%,transparent 92%)}
+.door-panel p{font-size:16px;margin:10px 0 20px;max-width:330px}
+.door-label{font-family:var(--display);font-weight:900;font-size:13px;letter-spacing:.2em;margin-bottom:8px;opacity:.7}
+.door-list{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.door-q{display:flex;align-items:center;gap:12px;width:100%;min-height:54px;padding:10px 14px;background:#fffaf0;border:2.5px solid var(--ink);border-radius:8px;
+  box-shadow:3px 3px 0 var(--ink);text-align:left;font-family:var(--display);font-weight:900;font-size:17px;transition:transform .08s,box-shadow .08s,background .15s}
+.door-q:hover{background:#fff3cf}
+.door-q:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+.door-q .no{font-family:var(--hand);font-weight:700;color:var(--red);font-size:18px}
+.door-q .t{flex:1}
+.door-q .go{font-family:var(--ui);font-weight:400;font-size:13px;opacity:.6}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:none;border-style:dashed;height:48px;font-size:15px}
+.btn.ghost:active{transform:none}
+.btn.ghost svg{fill:var(--ink)}
+.door-panel .fine{margin-top:auto;padding-top:18px}
+
+/* ---------- 算命桌 ---------- */
+#s-table{background:var(--table);background-image:radial-gradient(rgba(255,255,255,.06) 1.2px,transparent 1.6px);background-size:14px 14px;
+  border-left:2.5px solid var(--ink);border-right:2.5px solid var(--ink)}
+.reader{position:relative;flex:none}
+.reader .hands{width:100%;height:auto}
+.finger{transform-box:fill-box}
+.hands.drum .rh .finger{animation:drum 1.1s ease-in-out infinite}
+.hands.drum .rh .f2{animation-delay:.09s}.hands.drum .rh .f3{animation-delay:.18s}.hands.drum .rh .f4{animation-delay:.27s}
+@keyframes drum{0%,40%,100%{transform:translateY(0)}18%{transform:translateY(-6px)}}
+.hands .lh,.hands .rh{transform-box:fill-box;transform-origin:top center;transition:transform .2s}
+.hands.nod .lh{animation:nod .45s}
+@keyframes nod{40%{transform:translateY(-7px) rotate(-4deg)}}
+.prop{position:absolute;bottom:2px}
+.prop.candle{left:14px;width:42px}
+.prop.cup{right:10px;width:58px}
+.flame{transform-box:fill-box;transform-origin:bottom center;animation:flick 1.4s ease-in-out infinite;transition:opacity .2s}
+@keyframes flick{0%,100%{transform:scale(1) rotate(-2deg)}35%{transform:scale(1.08,.94) rotate(3deg)}70%{transform:scale(.94,1.06) rotate(-3deg)}}
+.candle.out .flame{opacity:0}
+.candle.big .flame{animation:big .9s}
+@keyframes big{30%{transform:scale(1.9)}}
+.candle.dim .flame{animation:dim 1s}
+@keyframes dim{30%{transform:scale(.35)}}
+.candle .puff{opacity:0}
+.candle.out .puff{animation:smoke 1.2s linear}
+.steam path{stroke-dasharray:4 5;animation:steam 2.4s linear infinite}
+@keyframes steam{to{stroke-dashoffset:-18}}
+.cup.clink{animation:clink .3s}
+@keyframes clink{30%{transform:rotate(-7deg)}70%{transform:rotate(4deg)}}
+
+.remark{--r:-1.5deg;position:relative;z-index:3;margin:-8px auto 0;width:fit-content;max-width:calc(100% - 48px);min-height:44px;
+  background:var(--paper);border:2px solid var(--ink);box-shadow:3px 3px 0 var(--ink);border-radius:3px;
+  padding:8px 16px;font-family:var(--hand);font-weight:700;font-size:19px;line-height:1.45;text-align:center;transform:rotate(var(--r))}
+.remark.pop{animation:pop .28s ease-out both}
+.remark::before{content:"";position:absolute;left:50%;top:-9px;width:44px;height:14px;margin-left:-22px;background:rgba(242,182,50,.85);border:1.5px solid rgba(28,26,31,.5);transform:rotate(2deg)}
+
+.stage{display:none;flex:1;flex-direction:column;padding:18px 16px 28px}
+.stage.on{display:flex;animation:rise .4s ease-out}
+
+/* 問事單 */
+.slip{padding:18px 18px 20px;transform:rotate(-.5deg);display:flex;flex-direction:column}
+.slip-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;border-bottom:2.5px solid var(--ink);margin-bottom:16px}
+.slip-head .ttl{font-family:var(--display);font-weight:900;font-size:15px;letter-spacing:.3em;color:var(--red);border:2px solid var(--red);padding:2px 6px 2px 10px;border-radius:3px}
+.slip-head{flex-wrap:wrap;row-gap:8px}
+.slip-title{order:3;width:100%;font-family:var(--display);font-weight:900;font-size:13px;opacity:.6;letter-spacing:.08em}
+.slip-head .no{font-size:13px;letter-spacing:.06em}
+.slip-head .no b{font-family:var(--hand);font-size:17px;color:var(--red)}
+.ticks{display:flex;gap:5px}
+.ticks i{width:16px;height:6px;border:1.5px solid var(--ink);border-radius:1px}
+.ticks i.done{background:var(--ink)}
+.ticks i.now{background:var(--red);border-color:var(--red)}
+.q-label{font-family:var(--display);font-weight:900;font-size:20px;margin-bottom:4px}
+.q-hint{font-size:13px;opacity:.65;margin-bottom:6px}
+.opts{display:flex;flex-direction:column;margin-bottom:18px}
+.opt{display:flex;align-items:center;gap:12px;width:100%;min-height:52px;padding:10px 2px;border-bottom:1.5px dashed rgba(28,26,31,.32);text-align:left;font-size:17px}
+.opt .mark{flex:none;width:22px;height:22px;border:2px solid var(--ink);border-radius:50%;position:relative;background:#fffaf0}
+.opt.multi .mark{border-radius:4px}
+.opt .tx{position:relative;z-index:0;padding:0 5px}
+.opt .tx::before{content:"";position:absolute;left:0;right:0;bottom:3px;height:58%;background:var(--yellow);z-index:-1;border-radius:2px;
+  transform:scaleX(0) skewX(-8deg);transform-origin:left;transition:transform .28s cubic-bezier(.3,.8,.3,1)}
+.opt[aria-pressed=true] .tx::before{transform:scaleX(1) skewX(-8deg)}
+.opt .mark::after{content:"";position:absolute;left:5px;top:-7px;width:10px;height:20px;border:solid var(--red);border-width:0 3.5px 3.5px 0;
+  transform:rotate(40deg) scale(0);transform-origin:bottom right;transition:transform .18s .05s}
+.opt[aria-pressed=true] .mark::after{transform:rotate(40deg) scale(1)}
+.line-input{width:100%;border:0;border-bottom:2.5px solid var(--ink);background:transparent;font-family:var(--hand);font-weight:700;font-size:26px;
+  color:var(--ink);padding:10px 2px 6px;margin:6px 0 22px;outline:none;border-radius:0}
+.line-input:focus{border-bottom-color:var(--red)}
+.line-input::placeholder{color:rgba(28,26,31,.3);font-size:20px}
+textarea.line-input{font-size:20px;height:148px;resize:none;border-bottom:0;padding:0 2px;line-height:37px;
+  background-image:repeating-linear-gradient(transparent 0 35px,rgba(28,26,31,.35) 35px 37px)}
+textarea.line-input:focus{background-image:repeating-linear-gradient(transparent 0 35px,var(--red) 35px 37px)}
+.slip-actions{margin-top:6px;display:flex;flex-direction:column;align-items:center;gap:4px}
+
+/* 菜單 */
+.menu{padding:20px 18px 18px;transform:rotate(.4deg)}
+.menu-head{text-align:center;padding-bottom:10px;border-bottom:2.5px solid var(--ink)}
+.menu-head .t{font-family:var(--hand);font-weight:700;font-size:34px;line-height:1.25}
+.menu-head .s{font-size:12px;letter-spacing:.3em;opacity:.6}
+.dish{position:relative;display:grid;grid-template-columns:1fr auto;gap:2px 14px;width:100%;text-align:left;padding:16px 6px 16px 4px;
+  border-bottom:1.5px dashed rgba(28,26,31,.32);transition:background .15s}
+.dish:hover{background:rgba(242,182,50,.16)}
+.dish:active{background:rgba(242,182,50,.3)}
+.dish .ttl{font-family:var(--display);font-weight:900;font-size:21px;line-height:1.35}
+.dish .no{font-family:var(--hand);font-weight:700;color:var(--red);font-size:19px;margin-right:8px}
+.dish .price{grid-column:2;grid-row:1/4;align-self:center;font-family:var(--hand);font-weight:700;font-size:27px;color:var(--red);line-height:1}
+.dish .price small{font-size:12px;margin-right:2px;font-family:var(--ui)}
+.dish .desc{grid-column:1;font-size:14px;opacity:.8}
+.dish .mini{grid-column:1;display:flex;gap:7px;margin-top:6px}
+.dish .mr{display:flex;gap:2px}
+.dish .mr i{width:9px;height:15px;border:1.5px solid var(--ink);border-radius:2px;background:var(--navy)}
+.dish .sticker{position:absolute;right:-10px;top:-6px;width:44px;height:44px;border-radius:50%;background:var(--yellow);border:2px solid var(--ink);
+  display:grid;place-items:center;font-family:var(--display);font-weight:900;font-size:12px;transform:rotate(12deg);box-shadow:2px 2px 0 var(--ink)}
+.menu-foot{font-size:12.5px;text-align:center;opacity:.65;margin-top:14px;line-height:1.8}
+.letter-head{font-family:var(--display);font-weight:900;font-size:13px;letter-spacing:.15em;color:var(--red);margin-bottom:8px}
+
+/* 牌 */
+.card{width:var(--card-w);aspect-ratio:.58;position:relative;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.3,.7,.2,1)}
+.card .face{position:absolute;inset:0;border-radius:7px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;border:2px solid var(--ink)}
+.card .front{transform:rotateY(180deg);background:#e9dfc8}
+.card .front img{width:100%;height:100%;object-fit:cover;display:block}
+.card.rev .front img{transform:rotate(180deg)}
+.card.flipped{transform:rotateY(180deg)}
+.back{background:var(--navy)}
+.back::before{content:"";position:absolute;inset:4px;border:1.5px solid var(--paper);border-radius:3px;
+  background:repeating-linear-gradient(45deg,rgba(246,236,214,.13) 0 2px,transparent 2px 8px),repeating-linear-gradient(-45deg,rgba(246,236,214,.13) 0 2px,transparent 2px 8px)}
+.back::after{content:"";position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='13' fill='%23232a4d'/%3E%3Cpath d='M26 10.8A11 11 0 1 0 26 29.2A10 10 0 0 1 26 10.8z' fill='%23f2b632' stroke='%231c1a1f' stroke-width='1.2'/%3E%3C/svg%3E") center/50% no-repeat}
+
+/* 洗牌 */
+.shuffle-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;padding-bottom:30px}
+.deck{position:relative;width:132px;aspect-ratio:.58;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:grab}
+.deck .card{position:absolute;inset:0;width:100%;transition:none;box-shadow:2px 2px 0 var(--ink);border-radius:7px}
+.bar{width:180px;height:16px;border:2.5px solid var(--ink);border-radius:8px;background:var(--paper);overflow:hidden;box-shadow:3px 3px 0 var(--ink)}
+.bar i{display:block;height:100%;width:0;background:var(--yellow);border-right:2.5px solid var(--ink)}
+.tag{font-family:var(--display);font-weight:900;font-size:14px;letter-spacing:.1em;background:var(--paper);border:2px solid var(--ink);border-radius:3px;padding:3px 10px;box-shadow:3px 3px 0 var(--ink)}
+
+/* 牌陣 */
+.spread{display:grid;grid-template-columns:auto repeat(3,var(--card-w));gap:26px 12px;justify-content:center;align-items:center;margin:4px 0 26px}
+.row-tag{writing-mode:vertical-rl;font-family:var(--display);font-weight:900;letter-spacing:.3em;font-size:14px;background:var(--paper);
+  border:2px solid var(--ink);border-radius:3px;padding:10px 3px 6px;box-shadow:3px 3px 0 var(--ink)}
+.row-tag.alt{background:var(--yellow)}
+.slot{width:var(--card-w);aspect-ratio:.58;border-radius:7px;border:2px dashed rgba(246,236,214,.55);position:relative;perspective:800px}
+.slot .pos{position:absolute;left:0;right:0;bottom:-22px;text-align:center;font-size:12px;color:var(--paper);opacity:.85}
+.slot .card{position:absolute;inset:-2px;width:auto;cursor:pointer;box-shadow:3px 3px 0 rgba(0,0,0,.35);border-radius:7px}
+.slot .card.flipped{cursor:default}
+.fan{position:relative;height:172px;margin:0 -16px}
+.fan .card{--w:56px;width:var(--w);position:absolute;left:50%;bottom:36px;margin-left:calc(var(--w) / -2);transform-origin:50% 270%;
+  transition:transform .3s ease,opacity .25s;cursor:pointer}
+.fan .card.taken{opacity:0;pointer-events:none}
+.pick-actions{display:flex;justify-content:center}
+.flyer{position:fixed!important;z-index:40;pointer-events:none;margin:0!important}
+
+/* 解讀信 */
+.letter{padding:22px 18px 26px;transform:rotate(.3deg)}
+.letter .dear{font-family:var(--hand);font-weight:700;font-size:21px;line-height:1.7}
+.letter .dear p{margin-bottom:4px}
+.sec{display:flex;align-items:center;gap:10px;margin:30px 0 8px}
+.sec span{font-family:var(--display);font-weight:900;font-size:14px;letter-spacing:.2em;background:var(--ink);color:var(--paper);padding:3px 8px 3px 11px;border-radius:2px}
+.sec::after{content:"";flex:1;border-top:2.5px solid var(--ink)}
+.cread{display:grid;grid-template-columns:70px 1fr;gap:14px;padding:14px 0;border-bottom:1.5px dashed rgba(28,26,31,.32)}
+.cread .card{--card-w:70px;box-shadow:3px 3px 0 var(--ink);border-radius:7px}
+.cread .meta{font-family:var(--display);font-weight:900;font-size:12px;letter-spacing:.1em;color:var(--red)}
+.cread .nm{font-family:var(--display);font-weight:900;font-size:19px;margin:1px 0 3px}
+.cread .nm small{font-family:var(--ui);font-weight:400;font-size:13px;background:var(--yellow);padding:0 6px;border-radius:2px;margin-left:6px;vertical-align:2px}
+.cread p{font-size:15.5px}
+
+.envelope{position:relative;margin-top:30px;background:var(--kraft);border:2.5px solid var(--ink);border-radius:6px;box-shadow:5px 5px 0 var(--ink);padding:140px 18px 20px;overflow:hidden}
+.envelope .flap{position:absolute;left:0;top:0;width:100%;height:96px}
+.envelope .seal{position:absolute;left:50%;top:62px;width:62px;height:62px;margin-left:-31px;border-radius:50%;background:var(--red);border:2.5px solid var(--ink);
+  box-shadow:inset 0 0 0 5px rgba(0,0,0,.14),3px 3px 0 var(--ink);display:grid;place-items:center;font-family:var(--stamp);font-weight:900;font-size:27px;color:var(--paper);transform:rotate(-8deg)}
+.envelope h3{font-family:var(--display);font-weight:900;font-size:22px;text-align:center;margin-bottom:10px}
+.envelope ul{list-style:none;font-size:15px;margin-bottom:18px}
+.envelope li{padding:6px 0 6px 24px;position:relative;border-bottom:1.5px dashed rgba(28,26,31,.35)}
+.envelope li::before{content:"";position:absolute;left:3px;top:13px;width:10px;height:10px;background:var(--ink);transform:rotate(45deg)}
+.envelope.opening .seal{animation:crack .45s forwards}
+@keyframes crack{30%{transform:rotate(-8deg) scale(1.25)}100%{transform:rotate(40deg) scale(0);opacity:0}}
+.envelope.opening{animation:envout .35s .35s forwards}
+@keyframes envout{to{opacity:0;transform:translateY(16px) scale(.97)}}
+.unsealed{animation:rise .5s ease-out}
+
+.verdict{text-align:center;padding:20px 0 6px}
+.verdict .lead{font-size:14px;letter-spacing:.3em;opacity:.7}
+.stamp{display:inline-block;margin:14px 0 18px;padding:6px 26px 10px;border:5px solid var(--red);border-radius:10px;outline:2px solid var(--red);outline-offset:4px;
+  font-family:var(--stamp);font-weight:900;font-size:56px;line-height:1.15;letter-spacing:.12em;text-indent:.12em;color:var(--red);transform:rotate(-7deg);opacity:0;mix-blend-mode:multiply}
+.stamp.hit{animation:hit .3s cubic-bezier(.2,.9,.3,1.2) forwards}
+@keyframes hit{from{opacity:0;transform:rotate(-16deg) scale(2.8)}to{opacity:.92;transform:rotate(-7deg) scale(1)}}
+.verdict p{text-align:left;font-size:16px}
+.steps{list-style:none}
+.steps li{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-bottom:1.5px dashed rgba(28,26,31,.32);font-size:16px;cursor:pointer}
+.steps .box{flex:none;width:22px;height:22px;margin-top:3px;border:2px solid var(--ink);border-radius:4px;background:#fffaf0;position:relative}
+.steps li[aria-checked=true] .box::after{content:"";position:absolute;left:5px;top:-7px;width:10px;height:20px;border:solid var(--red);border-width:0 3.5px 3.5px 0;transform:rotate(40deg)}
+.steps li[aria-checked=true] .st{opacity:.5;text-decoration:line-through}
+.sign{font-family:var(--hand);font-weight:700;font-size:20px;line-height:1.7;margin-top:26px}
+.sign .by{text-align:right;margin-top:10px}
+.result-actions{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:26px}
+
+/* 對話框 */
+.modal{position:fixed;inset:0;background:rgba(15,25,20,.72);display:none;align-items:center;justify-content:center;padding:24px;z-index:50}
+.modal.on{display:flex}
+.modal .box{max-width:360px;width:100%;padding:22px 20px;animation:pop .25s ease-out}
+.modal h3{font-family:var(--display);font-weight:900;font-size:21px;margin-bottom:8px}
+.modal p{font-size:15px;margin-bottom:20px}
+.modal .row{display:flex;flex-direction:column;gap:6px;align-items:center}
+
+@media (max-width:370px){:root{--card-w:76px}.door-panel h1{font-size:27px}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition-duration:.01s!important}.stamp{opacity:.92}}
+</style>
+</head>
+<body>
+<button class="mute" id="mute" aria-label="聲音" aria-pressed="true">
+  <svg viewBox="0 0 20 20" fill="none" stroke="#1c1a1f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8v4h3l4 3V5L6 8H3z" fill="#1c1a1f"/><path class="wave" d="M13 7.5a3.5 3.5 0 0 1 0 5M15.5 5a7 7 0 0 1 0 10"/><path class="x" d="M13.5 8l4 4M17.5 8l-4 4"/></svg>
+</button>
+
+<div class="app" id="app">
+
+  <!-- 店門口 -->
+  <section class="screen on" id="s-door">
+    <svg class="scene" id="scene" viewBox="0 0 390 430" role="img" aria-label="夜裡山邊的一間小塔羅店">
+      <rect width="390" height="430" fill="#2a2d6e"/>
+      <g fill="#f6ecd6">
+        <circle class="star" cx="40" cy="50" r="2.2"/><circle class="star" cx="96" cy="96" r="1.6"/><circle class="star" cx="150" cy="38" r="2"/>
+        <circle class="star" cx="222" cy="72" r="1.6"/><circle class="star" cx="262" cy="30" r="2.2"/><circle class="star" cx="366" cy="150" r="1.8"/><circle class="star" cx="28" cy="150" r="1.6"/>
+      </g>
+      <circle cx="312" cy="82" r="40" fill="#f2b632" stroke="#1c1a1f" stroke-width="2.5"/>
+      <circle cx="298" cy="72" r="6" fill="#e0a520"/><circle cx="326" cy="96" r="9" fill="#e0a520"/><circle cx="322" cy="64" r="4" fill="#e0a520"/>
+      <path d="M-4 300 L58 196 L112 258 L196 142 L286 262 L338 214 L394 276 V434 H-4Z" fill="#2f7a62" stroke="#1c1a1f" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M196 142 L176 170 L192 166 L204 180 L214 166Z" fill="#f6ecd6" stroke="#1c1a1f" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M-4 352 Q96 296 200 334 T394 322 V434 H-4Z" fill="#1f5a48" stroke="#1c1a1f" stroke-width="2.5"/>
+
+      <!-- 山羌（彩蛋） -->
+      <g class="deer" id="deer" role="button" aria-label="山坡上的山羌" tabindex="0">
+        <rect x="42" y="296" width="52" height="46" fill="transparent"/>
+        <path d="M56 316 q12 -7 26 0 l1 12 h-28z" fill="#b5743c" stroke="#1c1a1f" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M58 326 v12 M65 327 v11 M75 327 v11 M81 326 v12" stroke="#1c1a1f" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M78 316 l5 -12" stroke="#b5743c" stroke-width="7" stroke-linecap="round"/>
+        <ellipse cx="85" cy="302" rx="7" ry="5.5" fill="#b5743c" stroke="#1c1a1f" stroke-width="2"/>
+        <path d="M80 298 l-3 -6 M85 297 l1 -7" stroke="#1c1a1f" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="87" cy="301" r="1.2" fill="#1c1a1f"/>
+        <path d="M56 316 l-3 -3" stroke="#f6ecd6" stroke-width="3" stroke-linecap="round"/>
+      </g>
+
+      <!-- 店 -->
+      <g class="smoke" fill="#f6ecd6"><circle cx="246" cy="196" r="6"/><circle cx="246" cy="196" r="6"/><circle cx="246" cy="196" r="6"/></g>
+      <rect x="236" y="200" width="18" height="34" fill="#c98a4b" stroke="#1c1a1f" stroke-width="2.5"/>
+      <path d="M176 396 L160 434 H240 L218 396Z" fill="#eadcbd" stroke="#1c1a1f" stroke-width="2.5" stroke-linejoin="round"/>
+      <rect x="120" y="262" width="150" height="134" fill="#f6ecd6" stroke="#1c1a1f" stroke-width="2.5"/>
+      <path d="M102 266 L195 196 L288 266Z" fill="#e2492b" stroke="#1c1a1f" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M150 248 h90 M168 234 h54" stroke="#1c1a1f" stroke-width="2" opacity=".35"/>
+      <rect x="134" y="296" width="30" height="36" fill="#f2b632" stroke="#1c1a1f" stroke-width="2.5"/><path d="M149 296 v36 M134 314 h30" stroke="#1c1a1f" stroke-width="2"/>
+      <rect x="228" y="296" width="30" height="36" fill="#f2b632" stroke="#1c1a1f" stroke-width="2.5"/><path d="M243 296 v36 M228 314 h30" stroke="#1c1a1f" stroke-width="2"/>
+      <rect x="176" y="318" width="40" height="78" fill="#f2b632" stroke="#1c1a1f" stroke-width="2.5"/>
+      <g class="door-leaf"><rect x="176" y="318" width="40" height="78" fill="#232a4d" stroke="#1c1a1f" stroke-width="2.5"/><rect x="184" y="328" width="24" height="20" rx="2" fill="#f2b632" stroke="#1c1a1f" stroke-width="2"/><circle cx="208" cy="362" r="2.6" fill="#f2b632"/></g>
+      <circle cx="224" cy="352" r="4.5" fill="#f2b632" stroke="#1c1a1f" stroke-width="2"/>
+      <path d="M288 276 v10" stroke="#1c1a1f" stroke-width="2.5"/>
+      <rect x="275" y="286" width="26" height="58" rx="3" fill="#c98a4b" stroke="#1c1a1f" stroke-width="2.5"/>
+      <text x="288" y="310" text-anchor="middle" font-family="Noto Sans TC" font-weight="900" font-size="17" fill="#f6ecd6">塔</text>
+      <text x="288" y="334" text-anchor="middle" font-family="Noto Sans TC" font-weight="900" font-size="17" fill="#f6ecd6">羅</text>
+      <g class="lantern"><path d="M112 272 v14" stroke="#1c1a1f" stroke-width="2.5"/><ellipse cx="112" cy="298" rx="10" ry="13" fill="#e2492b" stroke="#1c1a1f" stroke-width="2.5"/><path d="M106 286 h12 M106 310 h12" stroke="#1c1a1f" stroke-width="2.5"/><path d="M112 311 v8" stroke="#f2b632" stroke-width="3"/></g>
+      <g class="bark" id="bark"><rect x="14" y="262" width="46" height="27" rx="5" fill="#f6ecd6" stroke="#1c1a1f" stroke-width="2"/><path d="M48 288 l6 8 l2 -8z" fill="#f6ecd6" stroke="#1c1a1f" stroke-width="2" stroke-linejoin="round"/><text x="37" y="281" text-anchor="middle" font-family="Noto Sans TC" font-weight="900" font-size="15" fill="#1c1a1f">汪！</text></g>
+    </svg>
+    <div class="door-panel">
+      <h1>工作和人生，<br><em>卡住了</em>嗎？</h1>
+      <p>抽幾張牌，他不繞圈子，直接給你一個答案。</p>
+      <div class="door-label">今天可以問</div>
+      <div class="door-list" id="door-list"></div>
+      <button class="btn ghost" id="ring">
+        <svg width="18" height="18" viewBox="0 0 20 20"><path d="M10 2a5 5 0 0 0-5 5v4l-2 3h14l-2-3V7a5 5 0 0 0-5-5zM8 16a2 2 0 0 0 4 0z"/></svg>先進去逛逛
+      </button>
+      <div class="fine">僅供娛樂參考，不構成任何專業建議</div>
+    </div>
+  </section>
+
+  <!-- 算命桌 -->
+  <section class="screen" id="s-table">
+    <div class="reader">
+      <svg class="hands drum" id="hands" viewBox="0 0 390 132" aria-hidden="true">
+        <g stroke="#1c1a1f" stroke-width="2.5" stroke-linejoin="round">
+          <path d="M112 -12 H278 Q300 -12 305 12 L312 40 Q195 66 78 40 L85 12 Q90 -12 112 -12Z" fill="#232a4d"/>
+          <path d="M170 -6 L195 30 L220 -6Z" fill="#f0c8a2"/>
+          <path d="M183 8 Q195 20 207 8" fill="none" stroke="#f2b632" stroke-width="2"/>
+          <!-- 左手（畫面左邊） -->
+          <g class="lh"><g transform="rotate(9 100 24)">
+            <rect x="78" y="14" width="46" height="62" rx="16" fill="#232a4d"/>
+            <rect x="77" y="66" width="48" height="12" rx="4" fill="#f6ecd6"/>
+            <rect class="finger f1" x="81" y="98" width="9.5" height="20" rx="4.75" fill="#f0c8a2"/>
+            <rect class="finger f2" x="91.5" y="98" width="9.5" height="25" rx="4.75" fill="#f0c8a2"/>
+            <rect class="finger f3" x="102" y="98" width="9.5" height="26" rx="4.75" fill="#f0c8a2"/>
+            <rect class="finger f4" x="112.5" y="98" width="9.5" height="21" rx="4.75" fill="#f0c8a2"/>
+            <rect x="119" y="84" width="10" height="23" rx="5" fill="#f0c8a2" transform="rotate(-30 124 86)"/>
+            <rect x="80" y="77" width="42" height="31" rx="13" fill="#f0c8a2"/>
+            <rect x="102" y="110" width="9.5" height="4.5" fill="#f2b632" stroke-width="1.5"/>
+          </g></g>
+          <!-- 右手（畫面右邊），手腕有木珠 -->
+          <g class="rh"><g transform="translate(390 0) scale(-1 1) rotate(9 100 24)">
+            <rect x="78" y="14" width="46" height="62" rx="16" fill="#232a4d"/>
+            <rect x="77" y="66" width="48" height="12" rx="4" fill="#f6ecd6"/>
+            <rect class="finger f4" x="81" y="98" width="9.5" height="20" rx="4.75" fill="#f0c8a2"/>
+            <rect class="finger f3" x="91.5" y="98" width="9.5" height="25" rx="4.75" fill="#f0c8a2"/>
+            <rect class="finger f2" x="102" y="98" width="9.5" height="26" rx="4.75" fill="#f0c8a2"/>
+            <rect class="finger f1" x="112.5" y="98" width="9.5" height="21" rx="4.75" fill="#f0c8a2"/>
+            <rect x="119" y="84" width="10" height="23" rx="5" fill="#f0c8a2" transform="rotate(-30 124 86)"/>
+            <rect x="80" y="77" width="42" height="31" rx="13" fill="#f0c8a2"/>
+            <g fill="#8a5a33" stroke-width="1.5"><circle cx="82" cy="81" r="4.2"/><circle cx="90" cy="82.5" r="4.2"/><circle cx="98" cy="83" r="4.2"/><circle cx="106" cy="83" r="4.2"/><circle cx="114" cy="82.5" r="4.2"/><circle cx="121" cy="81" r="4.2"/></g>
+          </g></g>
+        </g>
+      </svg>
+      <button class="prop candle" id="candle" aria-label="蠟燭">
+        <svg viewBox="0 0 42 74"><g stroke="#1c1a1f" stroke-width="2.5" stroke-linejoin="round">
+          <g class="puff" fill="#f6ecd6" stroke="none"><circle cx="21" cy="22" r="4"/></g>
+          <path class="flame" d="M21 6 Q30 20 21 30 Q12 20 21 6Z" fill="#f2b632"/>
+          <path d="M21 30 v5" stroke-width="2"/>
+          <rect x="13" y="34" width="16" height="28" rx="2" fill="#f6ecd6"/>
+          <path d="M13 42 q4 4 6 -1" fill="none" stroke-width="2"/>
+          <ellipse cx="21" cy="64" rx="17" ry="5.5" fill="#c98a4b"/>
+        </g></svg>
+      </button>
+      <button class="prop cup" id="cup" aria-label="茶杯">
+        <svg viewBox="0 0 58 62"><g stroke="#1c1a1f" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+          <g class="steam" fill="none" stroke="#f6ecd6"><path d="M20 22 q-5 -6 0 -11 q5 -5 0 -10"/><path d="M32 22 q-5 -6 0 -11 q5 -5 0 -10"/></g>
+          <path d="M40 34 h6 a6 6 0 0 1 0 12 h-6" fill="none"/>
+          <path d="M10 28 h32 v14 a12 12 0 0 1 -12 12 h-8 a12 12 0 0 1 -12 -12z" fill="#f6ecd6"/>
+          <path d="M10 28 h32" stroke="#8a5a33" stroke-width="5"/>
+          <ellipse cx="26" cy="56" rx="22" ry="4.5" fill="#e2492b"/>
+        </g></svg>
+      </button>
+    </div>
+    <div class="remark" id="remark" aria-live="polite"></div>
+
+    <!-- 菜單 -->
+    <div class="stage on" id="st-menu">
+      <div class="paper menu">
+        <div class="menu-head"><div class="t">今日問題</div><div class="s">工作和人生的大決定</div></div>
+        <div id="menu-list"></div>
+        <div class="menu-foot">每一道都附：問事單、親手抽牌、一封寫給你的信<br>更多問題，陸續上架</div>
+      </div>
+    </div>
+
+    <!-- 問事單 -->
+    <div class="stage" id="st-slip">
+      <div class="paper slip">
+        <div class="slip-head">
+          <span class="ttl">問事單</span><span class="slip-title" id="slip-title"></span>
+          <span class="ticks" id="ticks"></span>
+          <span class="no">No. <b id="slip-no"></b></span>
+        </div>
+        <div id="q-body" style="display:flex;flex-direction:column;flex:1"></div>
+      </div>
+    </div>
+
+    <!-- 洗牌 -->
+    <div class="stage" id="st-shuffle">
+      <div class="shuffle-wrap">
+        <div class="deck" id="deck" role="button" tabindex="0" aria-label="按住洗牌"></div>
+        <div class="bar"><i id="bar"></i></div>
+        <div class="tag" id="deck-label">按住牌堆洗牌</div>
+      </div>
+    </div>
+
+    <!-- 抽牌、翻牌 -->
+    <div class="stage" id="st-pick">
+      <div class="spread" id="spread"></div>
+      <div class="fan" id="fan"></div>
+      <div class="pick-actions"><button class="btn yellow" id="to-result" hidden>聽他怎麼說</button></div>
+    </div>
+
+    <!-- 解讀 -->
+    <div class="stage" id="st-result">
+      <div class="paper letter" id="letter"></div>
+      <div class="result-actions">
+        <button class="btn yellow" id="again">再問一題</button>
+        <button class="link on-table" id="leave">離開這家店</button>
+        <div class="fine" style="color:var(--paper)">僅供娛樂參考，不構成任何專業建議</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="modal" id="pay-modal" role="dialog" aria-modal="true" aria-labelledby="pay-title">
+  <div class="box paper">
+    <h3 id="pay-title">付款功能準備中</h3>
+    <p>這是試玩版，還沒有接上付款。正式版會在這裡用綠界付款，付款完成後信封就會打開。</p>
+    <div class="row">
+      <button class="btn" id="demo-unlock">試玩：直接拆開</button>
+      <button class="link" id="pay-close">先不要</button>
+    </div>
+  </div>
+</div>
+
+<script src="cards.js"></script>
+<script src="reading.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const wait = ms => new Promise(r => setTimeout(r, ms));
+// 自己玩用：網址加 ?full，信封會自動拆開，不跳付款
+const FULL = new URLSearchParams(location.search).has('full');
+
+/* ---------- 聲音：全部用程式合成，不載入音檔 ---------- */
+const Snd = (() => {
+  let ctx = null, on = true, buf = null;
+  function ac(){
+    if (!on) return null;
+    try {
+      if (!ctx) {
+        ctx = new (window.AudioContext || window.webkitAudioContext)();
+        buf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+        const d = buf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      }
+      if (ctx.state === 'suspended') ctx.resume();
+      return ctx;
+    } catch (e) { return null; }
+  }
+  function noise({ dur = .08, type = 'bandpass', f = 2000, f2, q = 1, gain = .25, delay = 0 }){
+    const c = ac(); if (!c) return; const t = c.currentTime + delay;
+    const s = c.createBufferSource(); s.buffer = buf; s.loop = true;
+    const fl = c.createBiquadFilter(); fl.type = type; fl.Q.value = q; fl.frequency.setValueAtTime(f, t);
+    if (f2) fl.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    const g = c.createGain(); g.gain.setValueAtTime(gain, t); g.gain.exponentialRampToValueAtTime(.001, t + dur);
+    s.connect(fl).connect(g).connect(c.destination); s.start(t, Math.random() * .5); s.stop(t + dur + .02);
+  }
+  function tone({ f = 440, f2, dur = .3, type = 'sine', gain = .2, delay = 0 }){
+    const c = ac(); if (!c) return; const t = c.currentTime + delay;
+    const o = c.createOscillator(); o.type = type; o.frequency.setValueAtTime(f, t);
+    if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    const g = c.createGain(); g.gain.setValueAtTime(gain, t); g.gain.exponentialRampToValueAtTime(.001, t + dur);
+    o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + .02);
+  }
+  return {
+    get on(){ return on; },
+    toggle(){ on = !on; if (!on && ctx) ctx.suspend(); return on; },
+    ding(){ tone({ f: 1318, dur: 1.1, gain: .16 }); tone({ f: 1976, dur: .7, gain: .07 }); tone({ f: 988, dur: 1.3, gain: .12, delay: .22 }); },
+    tick(){ noise({ dur: .05, f: 3200, q: 2, gain: .22 }); },
+    scratch(){ noise({ dur: .16, f: 1800, f2: 3400, q: 1.2, gain: .16 }); },
+    swish(){ noise({ dur: .2, f: 500, f2: 2600, q: .9, gain: .2 }); },
+    riffle(){ noise({ dur: .045, type: 'highpass', f: 2200, gain: .13 }); },
+    flip(){ noise({ dur: .05, type: 'highpass', f: 1800, gain: .3 }); tone({ f: 150, f2: 70, dur: .09, gain: .22 }); },
+    thud(){ tone({ f: 82, f2: 38, dur: .34, gain: .5 }); noise({ dur: .12, type: 'lowpass', f: 320, gain: .32 }); },
+    chime(){ tone({ f: 784, dur: .5, gain: .1 }); tone({ f: 1175, dur: .7, gain: .1, delay: .09 }); tone({ f: 1568, dur: .9, gain: .08, delay: .18 }); },
+    stamp(){ tone({ f: 105, f2: 42, dur: .22, gain: .6 }); noise({ dur: .09, type: 'lowpass', f: 900, gain: .45 }); },
+    puff(){ noise({ dur: .22, type: 'lowpass', f: 700, f2: 200, gain: .16 }); },
+    clink(){ tone({ f: 2350, dur: .25, gain: .1 }); tone({ f: 3520, dur: .16, gain: .05 }); },
+    tear(){ noise({ dur: .3, f: 1200, f2: 4200, q: .7, gain: .26 }); noise({ dur: .08, type: 'highpass', f: 2600, gain: .22, delay: .1 }); },
+    bark(){ tone({ f: 620, f2: 380, dur: .13, type: 'sawtooth', gain: .12 }); noise({ dur: .1, f: 1100, q: 1.5, gain: .12 }); },
+  };
+})();
+$('#mute').onclick = () => $('#mute').setAttribute('aria-pressed', Snd.toggle());
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id));
+  document.body.classList.toggle('at-table', id === 's-table');
+  window.scrollTo(0, 0);
+}
+function stage(id){
+  document.querySelectorAll('.stage').forEach(s => s.classList.toggle('on', s.id === id));
+  window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+}
+function shake(){ const a = $('#app'); a.classList.remove('shake'); void a.offsetWidth; a.classList.add('shake'); }
+
+/* 塔羅師的紙條：他說的話都寫在這裡 */
+function say(text){
+  const r = $('#remark'); r.textContent = text;
+  r.style.setProperty('--r', (Math.random() * 3 - 1.5).toFixed(1) + 'deg');
+  r.classList.remove('pop'); void r.offsetWidth; r.classList.add('pop');
+}
+function nod(){ const h = $('#hands'); h.classList.remove('nod'); void h.offsetWidth; h.classList.add('nod'); }
+function drum(on){ $('#hands').classList.toggle('drum', on); }
+
+/* ---------- 店門口 ---------- */
+// 進店：沒指定問題 → 先看菜單；從門口點了問題 → 直接開始那一題
+async function enterShop(k){
+  const btns = document.querySelectorAll('#ring, .door-q');
+  btns.forEach(b => b.disabled = true);
+  Snd.ding();
+  $('#scene').classList.add('open');
+  await wait(reduce ? 50 : 750);
+  show('s-table');
+  if (k) { chooseTopic(k); startSlip(); } else startMenu();
+  btns.forEach(b => b.disabled = false); $('#scene').classList.remove('open');
+}
+$('#ring').onclick = () => enterShop();
+$('#door-list').innerHTML = Object.entries(TOPICS).map(([k, t], i) =>
+  `<button class="door-q" data-t="${k}"><span class="no">${String(i + 1).padStart(2, '0')}</span><span class="t">${t.title}</span><span class="go">問他 →</span></button>`).join('');
+document.querySelectorAll('.door-q').forEach(b => b.onclick = () => enterShop(b.dataset.t));
+(function(){
+  const deer = $('#deer'), bark = $('#bark'); let t;
+  const go = () => { Snd.bark(); deer.classList.remove('jump'); void deer.getBBox(); deer.classList.add('jump'); bark.classList.add('on'); clearTimeout(t); t = setTimeout(() => bark.classList.remove('on'), 900); };
+  deer.addEventListener('click', go);
+  deer.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+})();
+
+/* ---------- 桌上的東西 ---------- */
+(function(){
+  const c = $('#candle'); let t;
+  c.onclick = () => {
+    if (c.classList.contains('out')) return;
+    Snd.puff(); c.classList.add('out');
+    clearTimeout(t); t = setTimeout(() => { c.classList.remove('out'); Snd.tick(); }, 1600);
+  };
+  const cup = $('#cup');
+  cup.onclick = () => { Snd.clink(); cup.classList.remove('clink'); void cup.offsetWidth; cup.classList.add('clink'); };
+})();
+function flame(kind){ const c = $('#candle'); c.classList.remove('big', 'dim'); void c.offsetWidth; c.classList.add(kind); }
+
+/* ---------- 菜單 ---------- */
+let A = { name: '' }, topic = null, topicKey = '';
+const ZH = ['零','一','二','三','四','五','六','七','八','九'];
+const SEC = {
+  switch: ['兩條路的現況', '接下來的路'],
+  talent: ['你的天賦和熱情', '阻礙和方向'],
+  timing: ['下個月，和一個提醒', '另外兩個月'],
+  leap: ['你心裡的聲音', '出發之後'],
+};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+const posOf = row => (typeof row.pos === 'function' ? row.pos() : row.pos);
+
+function startMenu(){
+  stage('st-menu'); drum(true);
+  say(A.name ? `${A.name}，還想問什麼？` : '歡迎。今天想問哪一件？');
+  $('#menu-list').innerHTML = Object.entries(TOPICS).map(([k, t], i) => {
+    const mini = t.rows.map(r => `<span class="mr">${posOf(r).map(() => '<i></i>').join('')}</span>`).join('');
+    return `<button class="dish" data-t="${k}">
+      ${i === 0 ? '<span class="sticker">招牌</span>' : ''}
+      <span class="ttl"><span class="no">${String(i + 1).padStart(2, '0')}</span>${t.title}</span>
+      <span class="price"><small>NT</small>${t.price}</span>
+      <span class="desc">${t.desc}</span>
+      <span class="mini" aria-label="${t.rows.reduce((n, r) => n + posOf(r).length, 0)} 張牌">${mini}</span>
+    </button>`;
+  }).join('');
+  document.querySelectorAll('.dish').forEach(b => b.onclick = () => {
+    Snd.scratch(); nod(); chooseTopic(b.dataset.t);
+    setTimeout(startSlip, reduce ? 0 : 250);
+  });
+}
+function chooseTopic(k){
+  topicKey = k; topic = TOPICS[k];
+  A = { name: A.name };
+  topic.qs.forEach(q => { A[q.key] = q.type === 'multi' ? [] : q.type === 'area' ? '' : null; });
+}
+
+/* ---------- 問事單 ---------- */
+const NAME_Q = { key: 'name', type: 'text', label: '稱呼', say: '坐。先告訴我，怎麼稱呼你？', ph: '暱稱就可以', next: '寫好了' };
+let QS = [], qi = 0, busy = false;
+
+function startSlip(){
+  QS = (A.name ? [] : [NAME_Q]).concat(topic.qs);
+  qi = 0; busy = false;
+  $('#slip-title').textContent = topic.title;
+  $('#slip-no').textContent = String(Math.floor(Math.random() * 9000) + 1000);
+  stage('st-slip'); drum(true); renderQ();
+}
+function renderQ(){
+  const q = QS[qi];
+  $('#ticks').innerHTML = QS.map((_, i) => `<i class="${i < qi ? 'done' : i === qi ? 'now' : ''}"></i>`).join('');
+  say(typeof q.say === 'function' ? q.say(A) : q.say);
+  let h = `<div class="q-label">${ZH[qi + 1]}、${q.label}</div>`;
+  h += q.hint ? `<div class="q-hint">${q.hint}</div>` : '';
+  if (q.type === 'text') h += `<input class="line-input" id="f" maxlength="12" placeholder="${q.ph}" value="${esc(A.name)}" autocomplete="nickname" aria-label="${q.label}">`;
+  if (q.type === 'area') h += `<textarea class="line-input" id="f" maxlength="200" placeholder="${q.ph}" aria-label="${q.label}">${esc(A.note || '')}</textarea>`;
+  if (q.opts) h += '<div class="opts">' + Object.entries(q.opts).map(([k, o]) => {
+    const on = q.type === 'multi' ? A[q.key].includes(k) : A[q.key] === k;
+    return `<button class="opt ${q.type === 'multi' ? 'multi' : ''}" data-k="${k}" aria-pressed="${on}"><span class="mark"></span><span class="tx">${o.label}</span></button>`;
+  }).join('') + '</div>';
+  h += '<div class="slip-actions">';
+  if (q.type !== 'one') h += `<button class="btn" id="next">${q.next || '下一欄'}</button>`;
+  if (q.skip) h += `<button class="link" id="skip">${q.skip}</button>`;
+  h += qi > 0 ? `<button class="link" id="back">← 上一欄</button>` : `<button class="link" id="back">← 換一道問題</button>`;
+  h += '</div>';
+  $('#q-body').innerHTML = h;
+
+  const f = $('#f'), nx = $('#next');
+  if (f && q.type === 'text') {
+    const sync = () => nx.disabled = !f.value.trim();
+    f.addEventListener('input', sync); sync();
+    f.addEventListener('keydown', e => { if (e.key === 'Enter' && f.value.trim()) nx.click(); });
+  }
+  if (q.type === 'multi') nx.disabled = !A[q.key].length;
+
+  document.querySelectorAll('.opt').forEach(b => b.onclick = async () => {
+    if (busy) return;
+    const k = b.dataset.k;
+    if (q.type === 'one') {
+      busy = true; A[q.key] = k;
+      document.querySelectorAll('.opt').forEach(x => x.setAttribute('aria-pressed', x === b));
+      Snd.scratch(); nod(); say(q.opts[k].r);
+      await wait(reduce ? 500 : 1100);
+      busy = false; advance();
+    } else {
+      const arr = A[q.key], i = arr.indexOf(k);
+      if (i >= 0) arr.splice(i, 1);
+      else { if (arr.length >= q.max) arr.shift(); arr.push(k); Snd.scratch(); nod(); say(q.opts[k].r); }
+      document.querySelectorAll('.opt').forEach(x => x.setAttribute('aria-pressed', arr.includes(x.dataset.k)));
+      nx.disabled = !arr.length;
+    }
+  });
+  if (nx) nx.onclick = () => { if (busy) return; if (f) A[q.key] = f.value.trim(); Snd.tick(); advance(); };
+  const sk = $('#skip'); if (sk) sk.onclick = () => { A.note = ''; advance(); };
+  $('#back').onclick = () => {
+    if (busy) return;
+    if (f) A[q.key] = f.value.trim();
+    if (qi > 0) { qi--; renderQ(); } else startMenu();
+  };
+}
+function advance(){
+  if (qi < QS.length - 1) { qi++; renderQ(); }
+  else startShuffle();
+}
+
+/* ---------- 洗牌（按住） ---------- */
+const backHTML = '<div class="face back"></div><div class="face front"></div>';
+let deckOrder = [];
+function startShuffle(){
+  stage('st-shuffle'); drum(true);
+  say('好，我知道了。' + topic.shuffleSay);
+  const deck = $('#deck');
+  deck.innerHTML = Array.from({ length: 6 }, () => `<div class="card">${backHTML}</div>`).join('');
+  [...deck.children].forEach((c, i) => c.style.transform = `translate(${i * 1.2}px,${-i * 1.4}px)`);
+  $('#bar').style.width = '0';
+  $('#deck-label').textContent = '按住牌堆洗牌';
+}
+(function(){
+  const deck = $('#deck'); const NEED = 1900;
+  let held = 0, holding = false, last = 0, raf = 0, done = false, lastRiffle = 0;
+  function tick(t){
+    const dt = last ? Math.min(50, t - last) : 16; last = t;
+    held = holding ? held + dt : Math.max(0, held - dt * 1.5);
+    $('#bar').style.width = Math.min(100, held / NEED * 100) + '%';
+    const cs = deck.children;
+    for (let i = 0; i < cs.length; i++) {
+      if (holding && !reduce) {
+        const k = Math.sin(t / 85 + i * 1.7);
+        cs[i].style.transform = `translate(${k * 30 * (i % 2 ? 1 : -1)}px,${-i * 1.4 + Math.cos(t / 110 + i) * 5}px) rotate(${k * 8}deg)`;
+      } else cs[i].style.transform = `translate(${i * 1.2}px,${-i * 1.4}px)`;
+    }
+    if (holding && t - lastRiffle > 75) { lastRiffle = t; Snd.riffle(); }
+    if (held >= NEED && !done) { done = true; holding = false; finish(); raf = 0; last = 0; return; }
+    if (holding || held > 0) raf = requestAnimationFrame(tick); else { last = 0; raf = 0; }
+  }
+  const down = e => {
+    if (done) return; e.preventDefault(); holding = true; drum(false);
+    $('#deck-label').textContent = '心裡想著你的問題……';
+    if (!raf) raf = requestAnimationFrame(tick);
+  };
+  const up = () => { if (!holding) return; holding = false; if (!done) { $('#deck-label').textContent = '再按久一點'; say('還沒，再洗一下。'); } };
+  deck.addEventListener('pointerdown', down);
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => deck.addEventListener(ev, up));
+  deck.addEventListener('contextmenu', e => e.preventDefault());
+  deck.addEventListener('keydown', e => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) down(e); });
+  deck.addEventListener('keyup', e => { if (e.key === ' ' || e.key === 'Enter') up(); });
+  async function finish(){
+    $('#deck-label').textContent = '洗好了'; Snd.flip();
+    deckOrder = CARDS.map(c => ({ card: c, rev: Math.random() < .3 })).sort(() => Math.random() - .5);
+    await wait(reduce ? 100 : 600);
+    done = false; held = 0; startPick();
+  }
+})();
+
+/* ---------- 抽牌、翻牌 ---------- */
+let picks = [], SLOTS = [];
+function startPick(){
+  stage('st-pick'); picks = []; drum(true);
+  SLOTS = topic.rows.flatMap(r => posOf(r).map(p => ({ tag: r.tag, pos: p })));
+  say(`憑直覺，抽${ZH[SLOTS.length]}張。`);
+  const cols = Math.max(...topic.rows.map(r => posOf(r).length));
+  const sp = $('#spread');
+  sp.style.gridTemplateColumns = `auto repeat(${cols}, var(--card-w))`;
+  let h = '', idx = 0;
+  topic.rows.forEach(r => {
+    h += `<div class="row-tag ${r.cls || ''}">${r.tag}</div>`;
+    const ps = posOf(r);
+    ps.forEach(p => h += `<div class="slot" data-i="${idx++}"><span class="pos">${p}</span></div>`);
+    for (let k = ps.length; k < cols; k++) h += '<div></div>';
+  });
+  sp.innerHTML = h;
+  const fan = $('#fan'), n = deckOrder.length, arc = 64;
+  fan.innerHTML = deckOrder.map((d, i) => {
+    const a = -arc / 2 + arc * i / (n - 1);
+    return `<div class="card" data-i="${i}" data-a="${a}" style="transform:rotate(${a}deg)" role="button" tabindex="0" aria-label="抽第 ${i + 1} 張">${backHTML}</div>`;
+  }).join('');
+  fan.hidden = false; fan.style.opacity = 1; fan.getAnimations().forEach(x => x.cancel());
+  fan.querySelectorAll('.card').forEach(c => {
+    const base = `rotate(${c.dataset.a}deg)`;
+    c.onmouseenter = () => { if (!c.classList.contains('taken')) c.style.transform = base + ' translateY(-12px)'; };
+    c.onmouseleave = () => c.style.transform = base;
+    c.onclick = () => pick(c);
+    c.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(c); } };
+  });
+  $('#to-result').hidden = true;
+}
+function cardFace(d){ return `<div class="face back"></div><div class="face front"><img src="assets/cards/major_${String(d.card.n).padStart(2, '0')}.jpg" alt="${d.card.zh}"></div>`; }
+function pick(el){
+  if (picks.length >= SLOTS.length || el.classList.contains('taken')) return;
+  const d = deckOrder[+el.dataset.i], idx = picks.length, S = SLOTS[idx];
+  const slot = document.querySelector(`.slot[data-i="${idx}"]`);
+  const p = { draw: d, flipped: false }; picks.push(p);
+  const from = el.getBoundingClientRect();
+  el.classList.add('taken'); Snd.swish();
+
+  const card = document.createElement('div');
+  card.className = 'card' + (d.rev ? ' rev' : '');
+  card.innerHTML = cardFace(d);
+  card.setAttribute('role', 'button'); card.tabIndex = 0;
+  card.setAttribute('aria-label', `翻開「${S.tag}」的${S.pos}`);
+  card.style.visibility = 'hidden';
+  slot.appendChild(card);
+  card.onclick = () => flip(p, card);
+  card.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(p, card); } };
+
+  const to = slot.getBoundingClientRect();
+  if (!reduce) {
+    const fly = document.createElement('div'); fly.className = 'card flyer'; fly.innerHTML = backHTML;
+    Object.assign(fly.style, { left: to.left + 'px', top: to.top + 'px', width: to.width + 'px' });
+    document.body.appendChild(fly);
+    const dx = from.left + from.width / 2 - (to.left + to.width / 2), dy = from.top + from.height / 2 - (to.top + to.height / 2);
+    fly.animate([
+      { transform: `translate(${dx}px,${dy}px) scale(${56 / to.width}) rotate(${el.dataset.a}deg)` },
+      { transform: 'translate(0,0) scale(1) rotate(0deg)' }
+    ], { duration: 460, easing: 'cubic-bezier(.3,.7,.2,1)' }).onfinish = () => { fly.remove(); card.style.visibility = ''; };
+  } else card.style.visibility = '';
+
+  const left = SLOTS.length - picks.length, nextS = SLOTS[picks.length];
+  if (left === 0) {
+    say('好。一張一張翻開。'); drum(false);
+    const fan = $('#fan');
+    setTimeout(() => { if (reduce) fan.hidden = true; else fan.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 280, fill: 'forwards' }).onfinish = () => fan.hidden = true; }, 480);
+  } else if (nextS.tag !== S.tag) {
+    say(`再${ZH[SLOTS.filter(x => x.tag === nextS.tag).length]}張，抽給「${nextS.tag}」。`);
+  } else say(`還要${ZH[left]}張。`);
+}
+function flip(p, card){
+  if (picks.length < SLOTS.length || p.flipped) return;
+  p.flipped = true; card.classList.add('flipped'); Snd.flip();
+  const e = (p.draw.rev ? p.draw.card.rv : p.draw.card.up).e;
+  setTimeout(() => {
+    if (e <= -2) { Snd.thud(); shake(); flame('dim'); say(`${p.draw.card.zh}。這張要認真看。`); }
+    else if (e >= 2) { Snd.chime(); flame('big'); say(`${p.draw.card.zh}。這張不錯。`); }
+    else say(p.draw.card.zh + (p.draw.rev ? '，逆位。' : '。'));
+    if (picks.every(x => x.flipped)) setTimeout(() => { say('嗯。我看清楚了。'); $('#to-result').hidden = false; }, 1100);
+  }, reduce ? 0 : 420);
+}
+$('#to-result').onclick = () => { Snd.tick(); renderResult(); };
+
+/* ---------- 解讀：一封他寫給你的信 ---------- */
+let R = null;
+function thumb(d){ return `<div class="card flipped ${d.rev ? 'rev' : ''}">${cardFace(d)}</div>`; }
+function cread(c){
+  return `<div class="cread">${thumb(c.draw)}<div><div class="meta">${c.group}・${c.pos}</div><div class="nm">${cardName(c.draw)}<small>${c.draw.card.kw}</small></div><p>${c.text}</p></div></div>`;
+}
+function renderResult(){
+  R = topic.build(A, picks.map(p => p.draw));
+  stage('st-result'); drum(false); say('寫給你的。');
+  $('#letter').innerHTML = `
+    <div class="letter-head">${topic.title}</div>
+    <div class="dear">${R.intro.map(t => `<p>${esc(t)}</p>`).join('')}</div>
+    <div class="sec"><span>${SEC[topicKey][0]}</span></div>${R.free.map(i => cread(R.cards[i])).join('')}
+    <div class="envelope" id="env">
+      <svg class="flap" viewBox="0 0 100 30" preserveAspectRatio="none"><polygon points="0,0 100,0 50,30" fill="#c49a5f"/><polyline points="0,0 50,30 100,0" fill="none" stroke="#1c1a1f" stroke-width="2.5" vector-effect="non-scaling-stroke"/></svg>
+      <div class="seal" aria-hidden="true">封</div>
+      <h3>答案封在裡面。</h3>
+      <ul>${topic.lock.map(t => `<li>${t}</li>`).join('')}</ul>
+      <button class="btn" id="unlock">拆開信封　NT$${topic.price}</button>
+    </div>
+    <div id="sealed" hidden></div>`;
+  $('#unlock').onclick = () => { Snd.tick(); $('#pay-modal').classList.add('on'); $('#demo-unlock').focus(); };
+  if (FULL) setTimeout(unseal, reduce ? 0 : 900);
+}
+async function unseal(){
+  const env = $('#env'); if (!env) return;
+  Snd.tear(); env.classList.add('opening');
+  await wait(reduce ? 50 : 720);
+  env.remove();
+  const box = $('#sealed'); box.hidden = false; box.className = 'unsealed';
+  box.innerHTML = `
+    <div class="sec"><span>${SEC[topicKey][1]}</span></div>${R.rest.map(i => cread(R.cards[i])).join('')}
+    <div class="sec"><span>我的答案</span></div>
+    <div class="verdict"><div class="lead">牌說</div><div><div class="stamp" id="stamp">${R.verdict.headline}</div></div><p>${R.verdict.reason}</p></div>
+    <div class="sec"><span>接下來該做的</span></div>
+    <ol class="steps">${R.steps.map(s => `<li role="checkbox" aria-checked="false" tabindex="0"><span class="box"></span><span class="st">${s}</span></li>`).join('')}</ol>
+    <div class="sign"><p>${R.closing}</p><p class="by">── 山邊塔羅</p></div>`;
+  say('看吧。');
+  box.querySelectorAll('.steps li').forEach(li => {
+    const tg = () => { li.setAttribute('aria-checked', li.getAttribute('aria-checked') !== 'true'); Snd.scratch(); };
+    li.onclick = tg; li.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tg(); } };
+  });
+  const st = $('#stamp');
+  const hit = () => { st.classList.add('hit'); setTimeout(() => { Snd.stamp(); shake(); }, reduce ? 0 : 240); };
+  if ('IntersectionObserver' in window && !reduce) {
+    const io = new IntersectionObserver(es => { if (es[0].isIntersecting) { io.disconnect(); hit(); } }, { threshold: .9 });
+    io.observe(st);
+  } else hit();
+}
+const closePay = () => $('#pay-modal').classList.remove('on');
+$('#pay-close').onclick = closePay;
+$('#pay-modal').onclick = e => { if (e.target.id === 'pay-modal') closePay(); };
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePay(); });
+$('#demo-unlock').onclick = () => { closePay(); unseal(); };
+$('#again').onclick = () => { Snd.tick(); startMenu(); };
+$('#leave').onclick = () => { A = { name: '' }; show('s-door'); };
+</script>
+</body>
+</html>
