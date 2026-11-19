@@ -432,7 +432,7 @@ textarea.line-input:focus{background-image:repeating-linear-gradient(transparent
       <div class="shuffle-wrap">
         <div class="deck" id="deck" role="button" tabindex="0" aria-label="按住洗牌"></div>
         <div class="bar"><i id="bar"></i></div>
-        <div class="tag" id="deck-label">按住牌堆洗牌</div>
+        <div class="tag" id="deck-label">默念完，按住牌堆洗牌</div>
       </div>
     </div>
 
@@ -695,7 +695,7 @@ function startShuffle(){
   deck.innerHTML = Array.from({ length: 6 }, () => `<div class="card">${backHTML}</div>`).join('');
   [...deck.children].forEach((c, i) => c.style.transform = `translate(${i * 1.2}px,${-i * 1.4}px)`);
   $('#bar').style.width = '0';
-  $('#deck-label').textContent = '按住牌堆洗牌';
+  $('#deck-label').textContent = '默念完，按住牌堆洗牌';
 }
 (function(){
   const deck = $('#deck'); const NEED = 1900;
