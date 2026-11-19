@@ -242,6 +242,7 @@ textarea.line-input:focus{background-image:repeating-linear-gradient(transparent
 .cread .nm{font-family:var(--display);font-weight:900;font-size:19px;margin:1px 0 3px}
 .cread .nm small{font-family:var(--ui);font-weight:400;font-size:13px;background:var(--yellow);padding:0 6px;border-radius:2px;margin-left:6px;vertical-align:2px}
 .cread p{font-size:15.5px}
+.cread p.look{font-size:13.5px;line-height:1.65;color:rgba(28,26,31,.62);margin:2px 0 6px}
 
 .envelope{position:relative;margin-top:30px;background:var(--kraft);border:2.5px solid var(--ink);border-radius:6px;box-shadow:5px 5px 0 var(--ink);padding:140px 18px 20px;overflow:hidden}
 .envelope .flap{position:absolute;left:0;top:0;width:100%;height:96px}
@@ -822,7 +823,7 @@ $('#to-result').onclick = () => { Snd.tick(); renderResult(); };
 let R = null;
 function thumb(d){ return `<div class="card flipped ${d.rev ? 'rev' : ''}">${cardFace(d)}</div>`; }
 function cread(c){
-  return `<div class="cread">${thumb(c.draw)}<div><div class="meta">${c.group}・${c.pos}</div><div class="nm">${cardName(c.draw)}<small>${c.draw.card.kw}</small></div><p>${c.text}</p></div></div>`;
+  return `<div class="cread">${thumb(c.draw)}<div><div class="meta">${c.group}・${c.pos}</div><div class="nm">${cardName(c.draw)}<small>${c.draw.card.kw}</small></div><p class="look">${cardLook(c.draw)}</p><p>${c.text}</p></div></div>`;
 }
 function renderResult(){
   R = topic.build(A, picks.map(p => p.draw));

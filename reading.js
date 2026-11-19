@@ -6,6 +6,8 @@
 
 const cardText = d => (d.rev ? d.card.rv : d.card.up).t;
 const cardE = d => (d.rev ? d.card.rv : d.card.up).e;
+const cardLook = d => (d.rev ? d.card.rv : d.card.up).l || '';
+const cardGist = d => (d.rev ? d.card.rv : d.card.up).g || '';
 const cardName = d => d.card.zh + (d.rev ? '（逆位）' : '');
 const tone = (e, good, bad, mid) => (e >= 1 ? good : e <= -1 ? bad : mid);
 const MONTHS = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
@@ -53,7 +55,16 @@ function buildSwitch(a, draws) {
   ].filter(Boolean);
 
   const POS = ['現況', '會遇到', '三個月後'];
-  const cards = draws.map((d, i) => ({ group: i < 3 ? '留下' : '離開', pos: POS[i % 3], text: cardText(d), draw: d }));
+  const U_NOUN = { people: '人', content: '工作本身提不起勁', pay: '薪水', future: '看不到未來', tired: '身體和心都太累', unsure: '那種說不上來的不想去' };
+  const F_NOUN = { worse: '換了更糟', money: '收入不穩', age: '年紀或資歷不夠', family: '讓家人失望', waste: '之前的努力白費' };
+  const tie = (d, i) => {
+    const e = cardE(d);
+    if (i === 0) return `你說最讓你不開心的是${U_NOUN[u[0]]}。` + tone(e, '但這張牌說，這裡沒有你想的那麼糟。', '這張牌說的就是它。', '這件事不會自己變好，也不會馬上變壞。');
+    if (i === 4) return `如果你${{ same: '換到同一行的另一家', switch: '轉行', rest: '先休息一陣子', unknown: '先走再說' }[a.dest]}，` + tone(e, '會比你想的順。', '這就是你會先撞到的牆。', '要邊走邊調整。');
+    if (i === 5) return `你最怕${F_NOUN[a.fear]}。` + tone(e, '這張牌說，三個月後這件事沒有發生。', '這個擔心有一部分是對的，所以要先準備好。', '三個月後還不會有定論，但你會比現在清楚。');
+    return '';
+  };
+  const cards = draws.map((d, i) => ({ group: i < 3 ? '留下' : '離開', pos: POS[i % 3], text: cardText(d) + tie(d, i), draw: d }));
 
   const score = row => cardE(row[0]) + cardE(row[1]) + cardE(row[2]) * 1.5;
   const s = score(stay);
@@ -169,9 +180,15 @@ function buildTalent(a, draws) {
     ['阻礙其實不大，多半是你自己想太多。', '卡住你的就是這個。它比你以為的更大，要正面處理。', '阻礙存在，但可以繞過去。'],
     ['方向是開的。現在動，會比之後動更順。', '方向還有霧。先小步試，不要一次押上全部。', '方向慢慢在成形，邊走邊確認。'],
   ];
+  const TIE = [
+    e => `你說「${TALENT[a.love[0]].label}」會讓你忘記時間，` + tone(e, '這就是證據。', '那個感覺還在，只是最近很少有機會用到。', '就從這裡開始找。'),
+    e => `你最在意的是「${VALUE[a.value].label}」，` + tone(e, '有它的地方，你就點得起來。', '熱情被消耗，多半是因為最近一直得不到它。', '先從它比較多的事情開始試。'),
+    e => `你說最受不了「${AVOID[a.avoid].label}」，` + tone(e, '只要避開它，這個阻礙就不大。', '你現在的卡，很可能就是它造成的。', '挑工作的時候，把它當成第一道篩子。'),
+    () => ({ work: '你還在上班，可以邊做邊試，不用先辭職。', jobless: '空檔期正好拿來小規模試做，不用急著找下一份。', student: '趁還是學生，多試幾種，不用一次選定。', freelance: '你已經在接案，可以直接把新方向放進作品裡試。' })[a.status],
+  ];
   const cards = draws.map((d, i) => ({
     group: i < 2 ? '你' : '路', pos: POS[i],
-    text: tone(cardE(d), ...TPL[i]),
+    text: cardGist(d) + tone(cardE(d), ...TPL[i]) + TIE[i](cardE(d)),
     draw: d,
   }));
 
@@ -247,11 +264,20 @@ function nextMonths(now = new Date()) {
 function buildTiming(a, draws) {
   const name = a.name || '你';
   const ms = nextMonths();
+  const monthTie = i => {
+    if (a.pending === 'bonus' && [11, 12, 1].includes(ms[i].n)) return '年終還沒入袋，這個月可以先準備、先面試，離職等拿到再說。';
+    if (i !== 0) return '';
+    if (a.urgency === 'pain') return '你說每天都很痛苦，這個月就算還不走，也先把離開的準備做起來。';
+    if (a.savings === 'lt3') return '存款還撐不久，這個月先多存一點，替自己留退路。';
+    if (a.pending === 'project') return '手上的專案，這個月先收到一個段落。';
+    return '';
+  };
+  const READY_TIE = { none: '你還沒開始找，先別急著跟同事說你想走。', looking: '在看職缺的這段時間，別讓現在的工作先垮掉。', interview: '面試的時候記得，你也在挑他們。', offer: '手上的 offer，回覆前把合約再讀一次。' };
   const cards = draws.map((d, i) => i < 3
     ? { group: '月份', pos: ms[i].zh, draw: d,
-        text: tone(cardE(d), '這個月順，適合主動出擊：投履歷、談條件。', '這個月有阻力，先別急著動，把力氣放在準備上。', '這個月平平，適合默默準備。') }
+        text: cardGist(d) + tone(cardE(d), '這個月順，適合主動出擊：投履歷、談條件。', '這個月有阻力，先別急著動，把力氣放在準備上。', '這個月平平，適合默默準備。') + monthTie(i) }
     : { group: '提醒', pos: '要注意', draw: d,
-        text: tone(cardE(d), '你的運氣不錯，但記得把話說清楚再走，好聚好散。', '小心衝動。離職信寫好先放一晚，隔天再送。', '不要只看薪水。面試時多問一句「團隊現在最大的問題是什麼」。') });
+        text: cardGist(d) + tone(cardE(d), '你的運氣不錯，但記得把話說清楚再走，好聚好散。', '小心衝動。離職信寫好先放一晚，隔天再送。', '不要只看薪水。面試時多問一句「團隊現在最大的問題是什麼」。') + READY_TIE[a.ready] });
 
   const score = ms.map((m, i) => {
     let s = cardE(draws[i]);
@@ -345,7 +371,19 @@ function buildLeap(a, draws) {
     ['出發之後，你會比現在更像自己。', '剛出發的時候會很辛苦，要有心理準備。', '出發之後有好有壞，差別在你怎麼過。'],
     ['一年後回頭看，你會慶幸自己走了這一步。', '一年後，可能會發現問題跟著你一起走了。', '一年後的你，會比現在更清楚自己要什麼。'],
   ];
-  const cards = draws.map((d, i) => ({ group: i < 2 ? '心' : '路', pos: POS[i], text: tone(cardE(d), ...TPL[i]), draw: d }));
+  const TIE = [
+    e => `你說最想要的是「${LEAP_WANT[a.want].label}」，` + tone(e, '牌是站在你這邊的。', '這張牌要你再問自己一次。', '這個答案還會變得更具體。'),
+    () => `你說最卡你的是「${LEAP_BLOCK[a.block].label}」。` + {
+      money: '錢的事算得出來，算出來就沒那麼可怕。',
+      age: '年紀很少是真正的問題，問題是你還要等多久。',
+      family: '家人的擔心，多半來自還不了解你的計畫。',
+      fail: '你怕回不來，但大部分的路，都留著回頭的方向。',
+      attach: '放不下的東西裡，有些其實可以帶著走。',
+    }[a.block],
+    () => ({ abroad: '到了國外，語言、住處和錢，會是最先考驗你的三件事。', startup: '創業之後，最先考驗你的會是現金流，和自己的紀律。', switch: '轉行之後，最先考驗你的，是從新手重新開始的那種落差。', rest: '停下來之後，最先考驗你的，是什麼都不做的那種不安。' })[a.what],
+    () => ({ new: '這個念頭才剛冒出來，一年後它還在不在，本身就是答案。', year: '這個念頭跟了你一年，再過一年，你會想知道自己有沒有試過。', years: '這個念頭已經跟了你好幾年。再過一年，它還是會在。' })[a.howlong],
+  ];
+  const cards = draws.map((d, i) => ({ group: i < 2 ? '心' : '路', pos: POS[i], text: cardGist(d) + tone(cardE(d), ...TPL[i]) + TIE[i](cardE(d)), draw: d }));
 
   let score = cardE(draws[2]) + cardE(draws[3]) * 1.5 + Math.min(0, cardE(draws[1])) * 0.5;
   score += { new: -1, year: 0.5, years: 1.5 }[a.howlong];
