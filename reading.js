@@ -452,6 +452,7 @@ function buildLeap(a, draws) {
 /* ================================================================
    菜單
    ================================================================ */
+// 自由填寫題：沒有接 AI 前讀不懂使用者寫的字，先不放進問事單（11/19 拿掉）
 const NOTE_Q = (ph) => ({ key: 'note', type: 'area', label: '其他想說的', hint: '可以不填', say: '最後，還有什麼想讓我知道的？', ph, next: '填好了', skip: '沒有了，直接開始' });
 
 const TOPICS = {
@@ -463,7 +464,6 @@ const TOPICS = {
       { key: 'unhappy', type: 'multi', max: 2, label: '最不開心的是', hint: '最多勾兩個', say: '在那裡，最讓你不開心的是什麼？', opts: UNHAPPY },
       { key: 'dest', type: 'one', label: '如果離開，想去', say: '如果真的走，心裡想去哪？', opts: DEST },
       { key: 'fear', type: 'one', label: '最怕的是', say: '嗯。那你最怕什麼？', opts: FEAR },
-      NOTE_Q('例如：主管上個月換人、考慮轉做設計……'),
     ],
     shuffleSay: '把心靜下來，想著「留下」和「離開」。',
     lock: ['兩條路各自會遇到什麼、三個月後的樣子', '他的答案：留下，還是離開', '接下來三個月，每個月做一件事'],
@@ -477,7 +477,6 @@ const TOPICS = {
       { key: 'love', type: 'multi', max: 2, label: '做什麼會忘記時間', hint: '最多勾兩個', say: '做什麼事的時候，你會忘記時間？', opts: TALENT },
       { key: 'avoid', type: 'one', label: '最受不了的是', say: '反過來，你最受不了什麼？', opts: AVOID },
       { key: 'value', type: 'one', label: '工作裡最在意的', say: '如果只能選一個，工作給你什麼最重要？', opts: VALUE },
-      NOTE_Q('例如：念的是會計，但一直喜歡畫畫……'),
     ],
     shuffleSay: '想著「我適合什麼」，替我洗牌。',
     lock: ['擋在你前面的是什麼、方向往哪裡', '他的答案：最適合你的工作類型', '接下來三個月，怎麼試水溫'],
@@ -491,7 +490,6 @@ const TOPICS = {
       { key: 'savings', type: 'one', label: '存款能撐多久', say: '老實說，存款能撐幾個月？', opts: SAVINGS },
       { key: 'pending', type: 'one', label: '有沒有在等什麼', say: '手上有沒有還在等的東西？', opts: PENDING },
       { key: 'urgency', type: 'one', label: '現在的心情', say: '現在每天去上班，感覺怎麼樣？', opts: URGENCY },
-      NOTE_Q('例如：公司在裁員、下個月要考績……'),
     ],
     shuffleSay: '想著「什麼時候走」，替我洗牌。',
     lock: ['其他兩個月的牌', '他的答案：哪一個月最適合走', '從現在到那個月，該做的三件事'],
@@ -505,7 +503,6 @@ const TOPICS = {
       { key: 'howlong', type: 'one', label: '這個念頭多久了', say: '這個念頭，跟了你多久？', opts: LEAP_LONG },
       { key: 'block', type: 'one', label: '最卡住你的', say: '是什麼讓你到現在還沒走？', opts: LEAP_BLOCK },
       { key: 'want', type: 'one', label: '去了之後最想得到', say: '如果真的去了，你最想得到什麼？', opts: LEAP_WANT },
-      NOTE_Q('例如：一直想去日本學設計，但家裡反對……'),
     ],
     shuffleSay: '想著那個你一直想去的地方，替我洗牌。',
     lock: ['出發之後會怎樣、一年後的你', '他的答案：出發，還是再等等', '接下來三個月，該做的三件事'],
