@@ -472,7 +472,7 @@ const $ = s => document.querySelector(s);
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const wait = ms => new Promise(r => setTimeout(r, ms));
 // 自己玩用：網址加 ?full，信封會自動拆開，不跳付款
-const FULL = new URLSearchParams(location.search).has('full');
+const FULL = !new URLSearchParams(location.search).has('pay'); // 試玩期間預設全開，?pay 才看付費牆
 
 /* ---------- 聲音：全部用程式合成，不載入音檔 ---------- */
 const Snd = (() => {
