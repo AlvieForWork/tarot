@@ -243,6 +243,11 @@ textarea.line-input:focus{background-image:repeating-linear-gradient(transparent
 .cread .nm small{font-family:var(--ui);font-weight:400;font-size:13px;background:var(--yellow);padding:0 6px;border-radius:2px;margin-left:6px;vertical-align:2px}
 .cread p{font-size:15.5px}
 .cread p.look{font-size:13.5px;line-height:1.65;color:rgba(28,26,31,.62);margin:2px 0 6px}
+.connection{padding:14px 0;border-bottom:1.5px dashed rgba(28,26,31,.32);overflow-wrap:anywhere}
+.connection h3{font-family:var(--display);font-size:18px;font-weight:900;margin-bottom:6px}
+.connection .pair{font-size:14px;line-height:1.7;color:var(--red);margin:8px 0 4px}
+.connection p{font-size:16px;margin:6px 0}
+.connection .span{font-size:14px;line-height:1.7;color:rgba(28,26,31,.68)}
 
 .envelope{position:relative;margin-top:30px;background:var(--kraft);border:2.5px solid var(--ink);border-radius:6px;box-shadow:5px 5px 0 var(--ink);padding:140px 18px 20px;overflow:hidden}
 .envelope .flap{position:absolute;left:0;top:0;width:100%;height:96px}
@@ -852,6 +857,11 @@ async function unseal(){
   const box = $('#sealed'); box.hidden = false; box.className = 'unsealed';
   box.innerHTML = `
     <div class="sec"><span>${SEC[topicKey][1]}</span></div>${R.rest.map(i => cread(R.cards[i])).join('')}
+    ${R.connections && R.connections.length ? `<div class="sec"><span>把牌放在一起看</span></div>${R.connections.map(c => `
+      <section class="connection"><h3>${esc(c.group)}</h3>
+        ${c.pair ? `<div class="pair">${esc(c.pair.label)}</div><p>${esc(c.pair.text)}</p>` : ''}
+        <div class="span">${esc(c.span)}</div><p>${esc(c.text)}</p>
+      </section>`).join('')}` : ''}
     <div class="sec"><span>我的答案</span></div>
     <div class="verdict"><div class="lead">牌說</div><div><div class="stamp" id="stamp">${R.verdict.headline}</div></div><p>${R.verdict.reason}</p></div>
     <div class="sec"><span>接下來該做的</span></div>
