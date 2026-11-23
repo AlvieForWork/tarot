@@ -37,6 +37,7 @@ function render(id, move = true, resultDay = localDate(new Date())) {
     $('poem-source').append(source);
   }
   $('poem').replaceChildren(...stick.poem.map(line => { const p = document.createElement('p'); p.textContent = line; return p; }));
+  text('poem-meaning', stick.poemMeaning);
   text('answer', stick.answer); text('interpretation', stick.interpretation);
   text('context-label', `給${data.states[state()]}的你`); text('context-answer', context.answer);
   text('context-reading', context.reading); text('context-action', context.action);
@@ -74,7 +75,7 @@ async function init() {
     const response = await fetch('./data.json', {cache: 'no-store'});
     if (!response.ok) throw new Error('data unavailable');
     data = await response.json();
-    if (data.sticks?.length !== 100) throw new Error('incomplete data');
+    if (data.sticks?.length !== 100 || data.sticks.some(stick => typeof stick.poemMeaning !== 'string')) throw new Error('incomplete data');
     latest = storedDraw(); setBusy(false);
     text('draw-button', latest ? '再搖一支籤' : '搖一支籤');
     if (latest) render(latest.id, false, latest.day);
