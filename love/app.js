@@ -71,7 +71,7 @@ $('back-to-form').addEventListener('click', () => {
 });
 async function init() {
   try {
-    const response = await fetch('./data.json');
+    const response = await fetch('./data.json', {cache: 'no-store'});
     if (!response.ok) throw new Error('data unavailable');
     data = await response.json();
     if (data.sticks?.length !== 100) throw new Error('incomplete data');
