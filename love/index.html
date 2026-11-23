@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>山邊姻緣籤（試玩版）</title>
+  <meta name="description" content="想著眼前的關係，搖一支姻緣籤，讀一段心意，帶走今天做得到的小建議。">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="山邊姻緣籤（試玩版）">
+  <meta property="og:description" content="單身、曖昧、交往中或分開後，讓一支籤陪你整理心意。">
+  <meta property="og:url" content="https://alvieforwork.github.io/tarot/love/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Huninn&family=LXGW+WenKai+TC&family=Noto+Sans+TC:wght@900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header class="masthead"><a href="../" aria-label="回到山邊塔羅">山邊小村<span>姻緣籤</span></a><span class="preview-label">試玩版</span></header>
+  <main>
+    <section class="opening" aria-labelledby="title">
+      <div class="introduction">
+        <p class="eyebrow">給正在想著某個人的你</p>
+        <h1 id="title">心裡的事，<br>抽一支籤<br><em>慢慢說。</em></h1>
+        <p class="intro">先想著眼前的關係，<br>讓一支籤陪你整理心意，<br>帶走一個今天做得到的小建議。</p>
+        <div class="bucket" id="bucket" aria-hidden="true">
+          <svg viewBox="0 0 260 260" role="presentation">
+            <g class="sticks" fill="#f6ecd6" stroke="#1c1a1f" stroke-width="3.5" stroke-linejoin="round">
+              <path d="M75 151 56 28 73 24 95 148Z"/><path d="M94 147 89 13 106 13 114 147Z"/>
+              <path d="M119 146 121 30 138 30 139 147Z"/><path d="M143 147 158 8 175 10 162 150Z"/>
+              <path d="M164 150 186 39 203 43 183 155Z"/>
+              <g stroke="#e2492b" stroke-width="7"><path d="m61 49 15-3"/><path d="M91 37h16"/><path d="M122 55h15"/><path d="m158 35 14 2"/><path d="m182 64 15 4"/></g>
+            </g>
+            <path d="m64 122 13 119q52 23 103 0l15-119Z" fill="#d7b27c" stroke="#1c1a1f" stroke-width="4" stroke-linejoin="round"/>
+            <path d="M65 122q65 23 130 0M74 217q55 21 109 0" fill="none" stroke="#1c1a1f" stroke-width="4"/>
+            <path d="m88 143 8 77m71-76-7 76" stroke="#8a5a33" stroke-width="3"/>
+            <path d="M111 153h38v52h-38z" fill="#e2492b" stroke="#1c1a1f" stroke-width="3"/>
+            <text x="130" y="188" text-anchor="middle" fill="#f6ecd6" font-size="29" font-family="serif">緣</text>
+          </svg>
+          <span class="bucket-note">一百支籤，一個小提醒</span>
+        </div>
+      </div>
+      <div class="question paper">
+        <span class="corner-label">問事單</span>
+        <form id="draw-form">
+          <fieldset><legend>現在的你，在哪一段？</legend>
+            <div class="state-options">
+              <label><input type="radio" name="state" value="single" checked><span>單身<small>想認識新的緣分</small></span></label>
+              <label><input type="radio" name="state" value="ambiguous"><span>曖昧<small>想把關係看清楚</small></span></label>
+              <label><input type="radio" name="state" value="inRelationship"><span>交往中<small>想照顧眼前的人</small></span></label>
+              <label><input type="radio" name="state" value="separated"><span>分開後<small>想整理心裡的牽掛</small></span></label>
+            </div>
+          </fieldset>
+          <p class="ritual">把想問的事放在心裡，<br>準備好了，就搖一支籤。</p>
+          <button class="primary" type="submit" id="draw-button" disabled>籤筒準備中</button>
+          <p class="draw-note" id="draw-note">每次都能重新搖籤，連續兩次不重複。切換感情狀態會保留這支籤。</p>
+        </form>
+        <p class="error" id="load-error" role="alert" hidden></p>
+        <p class="status" id="draw-status" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+    <section id="result" class="paper result" aria-labelledby="result-title" hidden tabindex="-1">
+      <div class="result-heading"><span id="result-mode"></span><span id="stick-grade" class="stamp"></span></div>
+      <p class="stick-number" id="stick-number"></p>
+      <h2 id="result-title"></h2>
+      <div class="poem" id="poem"></div>
+      <p class="source" id="poem-source"></p>
+      <div class="reading-block"><h3>這支籤想說的事</h3><p id="answer" class="answer"></p><p id="interpretation"></p></div>
+      <div class="reading-block context"><p class="context-label" id="context-label"></p><h3 id="context-answer"></h3><p id="context-reading"></p></div>
+      <div class="action"><span>今天的一小步</span><p id="context-action"></p></div>
+      <p class="switch-note">想換個角度讀？可以回到上方切換感情狀態，籤號會保留。</p>
+      <div class="result-actions"><button type="submit" form="draw-form" class="primary" id="redraw-button" disabled>再搖一支籤</button><button type="button" class="secondary" id="back-to-form">換個感情狀態</button></div>
+    </section>
+  </main>
+</body>
+</html>
